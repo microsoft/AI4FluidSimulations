@@ -1,0 +1,343 @@
+DATES 
+1 'OCT' 1996 /
+/
+
+DATES 
+1 'DEC' 1996 /
+/
+
+DATES 
+1 'FEB' 1997 /
+/
+
+DATES 
+1 'APR' 1997 /
+/
+
+DATES 
+1 'JUN' 1997 /
+/
+
+DATES 
+1 'AUG' 1997 /
+/
+
+DATES 
+1 'OCT' 1997 /
+/
+
+DATES 
+1 'DEC' 1997 /
+/
+
+DATES 
+1 'FEB' 1998 /
+/
+
+DATES 
+1 'APR' 1998 /
+/
+
+DATES 
+1 'JUN' 1998 /
+/
+
+DATES 
+1 'AUG' 1998 /
+/
+
+DATES 
+1 'OCT' 1998 /
+/
+
+DATES 
+1 'DEC' 1998 /
+/
+
+DATES 
+1 'FEB' 1999 /
+/
+
+DATES 
+1 'APR' 1999 /
+/
+
+DATES 
+1 'JUN' 1999 /
+/
+
+DATES 
+1 'AUG' 1999 /
+/
+
+DATES 
+1 'OCT' 1999 /
+/
+
+DATES 
+1 'DEC' 1999 /
+/
+
+DATES 
+1 'FEB' 2000 /
+/
+
+DATES 
+1 'APR' 2000 /
+/
+
+DATES 
+1 'JUN' 2000 /
+/
+
+DATES 
+1 'AUG' 2000 /
+/
+
+DATES 
+1 'OCT' 2000 /
+/
+
+DATES 
+1 'DEC' 2000 /
+/
+
+DATES 
+1 'FEB' 2001 /
+/
+
+DATES 
+1 'APR' 2001 /
+/
+
+DATES 
+1 'JUN' 2001 /
+/
+
+DATES 
+1 'AUG' 2001 /
+/
+
+DATES 
+1 'OCT' 2001 /
+/
+
+DATES 
+1 'DEC' 2001 /
+/
+
+DATES 
+1 'FEB' 2002 /
+/
+
+DATES 
+1 'APR' 2002 /
+/
+
+DATES 
+1 'JUN' 2002 /
+/
+
+DATES 
+1 'AUG' 2002 /
+/
+
+DATES 
+1 'OCT' 2002 /
+/
+
+DATES 
+1 'DEC' 2002 /
+/
+
+DATES 
+1 'FEB' 2003 /
+/
+
+DATES 
+1 'APR' 2003 /
+/
+
+DATES 
+1 'JUN' 2003 /
+/
+
+DATES 
+1 'AUG' 2003 /
+/
+
+DATES 
+1 'OCT' 2003 /
+/
+
+DATES 
+1 'DEC' 2003 /
+/
+
+DATES 
+1 'FEB' 2004 /
+/
+
+DATES 
+1 'APR' 2004 /
+/
+
+DATES 
+1 'JUN' 2004 /
+/
+
+DATES 
+1 'AUG' 2004 /
+/
+
+DATES 
+1 'OCT' 2004 /
+/
+
+DATES 
+1 'DEC' 2004 /
+/
+
+DATES 
+1 'FEB' 2005 /
+/
+
+DATES 
+1 'APR' 2005 /
+/
+
+DATES 
+1 'JUN' 2005 /
+/
+
+DATES 
+1 'AUG' 2005 /
+/
+
+DATES 
+1 'OCT' 2005 /
+/
+
+DATES 
+1 'DEC' 2005 /
+/
+
+DATES 
+1 'FEB' 2006 /
+/
+
+DATES 
+1 'APR' 2006 /
+/
+
+DATES 
+1 'JUN' 2006 /
+/
+
+DATES 
+1 'AUG' 2006 /
+/
+
+DATES 
+1 'OCT' 2006 /
+/
+
+DATES 
+1 'DEC' 2006 /
+/
+
+DATES 
+1 'FEB' 2007 /
+/
+
+DATES 
+1 'APR' 2007 /
+/
+
+DATES 
+1 'JUN' 2007 /
+/
+
+DATES 
+1 'AUG' 2007 /
+/
+
+DATES 
+1 'OCT' 2007 /
+/
+
+DATES 
+1 'DEC' 2007 /
+/
+
+DATES 
+1 'FEB' 2008 /
+/
+
+DATES 
+1 'APR' 2008 /
+/
+
+DATES 
+1 'JUN' 2008 /
+/
+
+DATES 
+1 'AUG' 2008 /
+/
+
+DATES 
+1 'OCT' 2008 /
+/
+
+DATES 
+1 'DEC' 2008 /
+/
+
+DATES 
+1 'FEB' 2009 /
+/
+
+DATES 
+1 'APR' 2009 /
+/
+
+DATES 
+1 'JUN' 2009 /
+/
+
+DATES 
+1 'AUG' 2009 /
+/
+
+DATES 
+1 'OCT' 2009 /
+/
+
+DATES 
+1 'DEC' 2009 /
+/
+
+DATES 
+1 'FEB' 2010 /
+/
+
+DATES 
+1 'APR' 2010 /
+/
+
+DATES 
+1 'JUN' 2010 /
+/
+
+DATES 
+1 'AUG' 2010 /
+/
+
+DATES 
+1 'OCT' 2010 /
+/
+
+DATES 
+1 'DEC' 2010 /
+/

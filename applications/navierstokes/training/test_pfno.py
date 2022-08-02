@@ -48,7 +48,7 @@ channel_out = 1
 num_k = (16, 16, 8)
 
 # Test dataset
-path = '/scratch/pwitte/waterlily/data'
+path = '/path/to/data'
 basename = 'cylinder_2d'
 test_idx = torch.linspace(1 + num_train, num_test + num_train, num_test, dtype=torch.int32).long()
 test_data = WaterlilySerial(test_idx, path, basename, normalize=True, clip=.3, target='vorticity')
@@ -70,9 +70,8 @@ pfno = ParallelFNO3d(
 )
 
 # Load trained network
-out_dir = '/scratch/pwitte/waterlily/model'
-#model_path = os.path.join(out_dir, f'model_{P_x.rank:04d}.pt')
-model_path = os.path.join(out_dir, 'model_0049_0000.pt')
+out_dir = '/path/to/model'
+model_path = os.path.join(out_dir, f'model_{P_x.rank:04d}.pt')
 pfno.load_state_dict(torch.load(model_path))
 pfno = pfno.to(device)
 pfno.train()

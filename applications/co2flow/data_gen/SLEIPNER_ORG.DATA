@@ -1,0 +1,151 @@
+-- This reservoir simulation deck is made available under the Open Database
+-- License: http://opendatacommons.org/licenses/odbl/1.0/. Any rights in
+-- individual contents of the database are licensed under the Database Contents
+-- License: http://opendatacommons.org/licenses/dbcl/1.0/
+-- 
+-- Copyright (C) 2021 NORCE
+-- Copyright (C) 2021 SINTEF
+-- 
+-- Note that seperate license and copyright applies to the included files in this deck.
+-- In particular the grid stored in Sleipner_Reference_Model_cleaned.grdecl.gz is owned
+-- by "The Sleipner Group", see the README for a list of companies.
+-- See the attached license.pdf for details on the license of the grid
+
+RUNSPEC
+
+TITLE
+The sleipner benchmark case 
+
+DIMENS
+ 72 126 263
+/
+
+EQLDIMS
+ 1 100 50 1 50
+/
+
+TABDIMS
+ 1 1 40 20 2 20
+/
+
+WELLDIMS
+ 4 10 1 4
+/
+
+OIL
+GAS
+CO2STOR
+
+METRIC
+UNIFOUT
+START 
+ 1 'SEP' 1996
+/
+
+GRID
+
+INIT
+
+INCLUDE
+  'DX.INC' /
+/
+
+INCLUDE
+  'DY.INC' /
+/
+
+INCLUDE
+  'DZ.INC' /
+/
+
+INCLUDE
+  'TOPS.INC' /
+/
+
+INCLUDE
+  'PORO.INC'
+/
+
+INCLUDE
+'PERMX.INC'
+/
+
+COPY
+PERMX PERMY /
+/
+
+INCLUDE
+'PERMZ.INC'
+/
+
+PROPS
+
+ROCK
+1.0e+01 1.6e-06
+/
+
+SGOF
+0.0	0.0	1.0 	0.025
+0.1	0.0     0.740	0.026
+0.2	0.009	0.528	0.027
+0.3	0.030	0.359	0.028
+0.4	0.070	0.230	0.030
+0.5	0.136	0.136	0.032
+0.6	0.230	0.070	0.035
+0.7	0.359	0.030	0.038
+0.8	0.528	0.009	0.044
+0.9	0.740	0.000	0.057 /
+
+SALINITY
+ 0.7 / --35-40g/l  -> 35-40g /kg -> 0.63-0.72 mol/g
+ 
+INCLUDE
+  'FIPNUM.INC'
+/ 
+
+SOLUTION
+
+EQUIL
+8.6300e+02 1.465583e+02  5.050e+03 0.0 1.0e+02 0.0  1 0 0 / 
+/
+
+RSVD
+800 0.0
+4150 0.0
+/
+
+RTEMPVD
+800 32.7134 
+1000 41
+/
+
+SUMMARY
+
+INCLUDE
+ 'SUMMARY.INC'
+/
+
+SCHEDULE
+RPTSCHED
+PRES SGAS RS WELLS
+/
+
+RPTRST
+ 'BASIC=2' 'ALLPROPS'/
+/
+
+INCLUDE
+ 'WELSPECS.txt' /
+/
+
+INCLUDE
+ 'COMPDAT.txt' /
+/
+
+INCLUDE
+ 'WCONINJE.txt' /
+/
+
+INCLUDE
+ SCHEDULE.INC
+/
