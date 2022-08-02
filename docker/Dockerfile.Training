@@ -1,0 +1,17 @@
+FROM nvcr.io/nvidia/pytorch:22.03-py3
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends hdf5-tools 
+    
+RUN pip3 install --no-cache-dir azure-common azure-storage-blob h5py zarr mpi4py
+
+# Clone DistDL
+WORKDIR /workspace/home
+
+# Cupy w/ nccl support
+RUN pip3 uninstall -y cupy-cuda115 && \
+    pip3 install --no-cache-dir cupy-cuda116 --pre -f https://pip.cupy.dev/pre
+ENV LD_LIBRARY_PATH="/usr/local/cuda/compat/lib.real:/opt/conda/lib/python3.8/site-packages/torch/lib:/opt/conda/lib/python3.8/site-packages/torch_tensorrt/lib:/usr/local/cuda/compat/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
+RUN python3 -m cupyx.tools.install_library --cuda 11.6 --library nccl
+
+WORKDIR /workspace/home/DistDL

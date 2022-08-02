@@ -1,14 +1,31 @@
-# Project
+# AI4IndustrySimulations
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## Overview
 
-As the maintainer of this project, please make a few updates:
+**AI for Industry Simulations** is a project for training large-scale surrogate models for solving partial differential equations (PDEs) with deep learning. We specifically target large-scale three-dimensional applications as common in industrial applications such as reservoir simulation. The current repository contains two example applications:
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+- Simulating two-phase CO2 flow in porous media.
+
+- Solving the 3D Navier Stokes to simulate flow around a sphere.
+
+For each example, we provide the code to simulate the training data and to train a neural surrogate model using a [model-parallel implementation of Fourier Neural Operators](https://arxiv.org/abs/2204.01205). We train our deep surrogate model using supervised training, so simulating the training data by solving the underlying PDE for different inputs is the first step of the workflow. For industry-sized applications, this training data step can become quite time consuming, as we need to solve 3D PDEs a large number of times (in the range of multiple 1,000 times). For this reason, we provide examples of how we can simulate this training data on in parallel on Azure using the AzureClusterlessHPC package and store the training data in Azure's cloud object store (Blob Storage).
+
+For training, we provide a model-paralle architecture of [Fourier Neural Operators](https://arxiv.org/pdf/2010.08895.pdf), which enables us to scale to larger problem sizes than with data parallelism. Unlike model parallelism in standard Pytorch, our model-parallel FNO uses domain decomposition, which enables a higher level of concurrently than model sharding or pipeline parallelism. Our model-parallel FNO is based on distributed programming with [DistDL](https://github.com/distdl/distdl), a Python package with distributed communication primitives for implementing model-parallel neural networks.
+
+
+## Installation
+
+To reproduce the examples from this repository, you need to install the following package:
+
+- [AzureClusterlessHPC.jl](https://github.com/microsoft/AzureClusterlessHPC.jl) is a Julia package for clusterless (batch-) computing on Azure. Follow the installation instructions on the project web page.
+
+Next, clone this repository and install the Python dependencies via `pip3 install -r requirements.txt`. See the documentation for instructions on how to simulate training data or train a model-parallel FNO.
+
+
+## Credits
+
+This repository is developed and maintained by the [Microsoft Research for Industry](https://www.microsoft.com/en-us/research/group/research-for-industry/) (RFI) team.
+
 
 ## Contributing
 
