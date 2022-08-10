@@ -11,7 +11,7 @@ ny = sleipner.get_ny()
 nz = sleipner.get_nz()
 nbpml = 4
 
-# Read TOPS
+# Read TOP
 tops = np.ones((nx, ny))
 for i in range(nx):
     for j in range(ny):
