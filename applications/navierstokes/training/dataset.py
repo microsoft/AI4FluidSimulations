@@ -1,3 +1,8 @@
+#  ------------------------------------------------------------------------------------------
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+#  ------------------------------------------------------------------------------------------
+
 import distdl.utilities.slicing as slicing
 from distdl.utilities.torch import *
 from distdl.backends.mpi.partition import MPIPartition
