@@ -51,7 +51,7 @@ jobs:
           
       - name: Install Julia depdendencies
         run: |
-          julia -e 'using Pkg; Pkg.add(["PyCall", "Waterlily", "AzureClusterlessHPC", "JLD", "HDF5", "PyPlot"])'
+          julia -e 'using Pkg; Pkg.add(["PyCall", "WaterLily", "AzureClusterlessHPC", "JLD", "HDF5", "PyPlot"])'
           
       - name: Build AI4FluidSimulations.jl
         uses: julia-actions/julia-buildpkg@latest
@@ -60,5 +60,5 @@ jobs:
         run: |
           export PYTHON=$(which python)
           julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.build("PyCall")'
-#      - name: Run tests
-#        uses: julia-actions/julia-runtest@latest
+      - name: Run tests
+        uses: julia-actions/julia-runtest@latest
