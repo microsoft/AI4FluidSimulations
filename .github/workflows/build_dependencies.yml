@@ -47,7 +47,7 @@ jobs:
       - name: Install Python depdendencies
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install torch zarr h5py numpy azure-storage-blob cupy-cuda115
+          pip3 install torch zarr h5py numpy azure-storage-blob azure-batch==9.0.0 cupy-cuda115
           
       - name: Install Julia depdendencies
         run: |
