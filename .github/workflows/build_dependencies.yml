@@ -39,15 +39,15 @@ jobs:
         with:
           version: ${{ matrix.version }}
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install Python depdendencies
         run: |
           python3 -m pip install --upgrade pip
-          pip3 install torch zarr h5py numpy azure-storage-blob mpi4py distdl cupy
+          pip3 install torch zarr h5py numpy azure-storage-blob mpi4py cupy-cuda115
           
       - name: Install Julia depdendencies
         run: |
