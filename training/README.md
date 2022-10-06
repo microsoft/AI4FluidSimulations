@@ -22,5 +22,5 @@ docker run --gpus all \
     -v $(pwd):/workspace/home \
     -e OMPI_ALLOW_RUN_AS_ROOT="1" \
     -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM="1" \
-    -it ai4fluidsimulations-train:v1.0
+    -it philippwitte/ai4fluidsimulations-train:v1.0
 ```

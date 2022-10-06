@@ -9,8 +9,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends hdf5-tools 
     
 RUN pip3 install --no-cache-dir azure-common azure-storage-blob h5py zarr mpi4py
+RUN pip3 install --no-cache-dir git+https://github.com/philippwitte/distdl.git@nccl
 
-# Clone DistDL
 WORKDIR /workspace/home
 
 # Cupy w/ nccl support
