@@ -13,14 +13,19 @@ For each example, we provide the code to simulate the training data and to train
 For training, we provide a model-paralle architecture of [Fourier Neural Operators](https://arxiv.org/pdf/2010.08895.pdf), which enables us to scale to larger problem sizes than with data parallelism. Unlike model parallelism in standard Pytorch, our model-parallel FNO uses domain decomposition, which enables a higher level of concurrently than model sharding or pipeline parallelism. Our model-parallel FNO is based on distributed programming with [DistDL](https://github.com/distdl/distdl), a Python package with distributed communication primitives for implementing model-parallel neural networks.
 
 
-## Installation
+## Quickstart for training
 
-To reproduce the examples from this repository, you need to install the following package:
+First, clone this repository:
 
-- [AzureClusterlessHPC.jl](https://github.com/microsoft/AzureClusterlessHPC.jl) is a Julia package for clusterless (batch-) computing on Azure. Follow the installation instructions on the project web page.
+```
+https://github.com/microsoft/AI4FluidSimulations
+```
 
-Next, clone this repository and install the Python dependencies via `pip3 install -r requirements.txt`. See the documentation for instructions on how to simulate training data or train a model-parallel FNO.
+Install Python dependencies:
 
+```
+pip3 install -r AI4FluidSimulations/requirements.txt
+```
 
 ## Credits
 

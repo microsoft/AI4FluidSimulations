@@ -13,19 +13,14 @@
 #######################################################################################################################
 # Batch pool
 
+ENV["CREDENTIALS"] = joinpath(pwd(), "../credentials.json")
 ENV["PARAMETERS"] = joinpath(pwd(), "parameters.json")
 
-using AzureClusterlessHPC, PyCall, HDF5, PyPlot, JLD
+using AzureClusterlessHPC, PyCall, HDF5, JLD
 batch_clear()
 
 # Create pool
-batch = pyimport("azure.batch")
-container_registry = batch.models.ContainerRegistry(
-    registry_server = ENV["REGISTRY_SERVER"],
-    user_name = ENV["USER_NAME"],
-    password = ENV["PASSWD"]
-)
-create_pool(container_registry=container_registry)
+create_pool()
 
 
 #######################################################################################################################
@@ -41,6 +36,7 @@ create_pool(container_registry=container_registry)
     fileinclude("DY.INC")
     fileinclude("DZ.INC")
     fileinclude("SCHEDULE.INC")
+    fileinclude("SUMMARY.INC")
     fileinclude("FIPNUM.INC")
     fileinclude("TOPS.INC")
     fileinclude("gen_model_sleipner.py")
@@ -108,14 +104,16 @@ filename = "SLEIPNER_ORG"
 shape = (64, 118, 263)    # nx, ny, nz
 nbpml = 4
 opm_cmd = `mpiexec -n 4 --allow-run-as-root flow $filename.DATA`
-ntrain = 1600
+num_train = 4   # 1600 for the full dataset
 
 # Populate with Azure credentials
-url = "https://myblobaccount.blob.core.windows.net"
-container = "mycontainer"
-credential = "mysecretkey"
+account = ENV["BLOB_ACCOUNT"]
+container = ENV["BLOB_CONTAINER"]
+credential = ENV["BLOB_KEY"]
+url = "https://" * account * ".blob.core.windows.net"
 
-bctrl = @batchexec pmap(isim -> run_opm(isim, filename, shape, nbpml, opm_cmd, url, container, credential), 1:ntrain)
+
+bctrl = @batchexec pmap(isim -> run_opm(isim, filename, shape, nbpml, opm_cmd, url, container, credential), 1:num_train)
 wait_for_tasks_to_complete(bctrl; timeout=9999, task_timeout=720, num_restart=4)
 
 # Get pool start time and job stats
