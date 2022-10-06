@@ -6,7 +6,9 @@
 #######################################################################################################################
 # Cloud setup
 
+ENV["CREDENTIALS"] = joinpath(pwd(), "../credentials.json")
 ENV["PARAMETERS"] = joinpath(pwd(), "parameters.json")
+
 using AzureClusterlessHPC, PyCall
 batch_clear()
 
