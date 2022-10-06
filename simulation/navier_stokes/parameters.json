@@ -8,7 +8,7 @@
     "_NODE_OS_OFFER": "ubuntu-server-container",
     "_NODE_OS_SKU": "20-04-lts",
     "_BLOB_CONTAINER": "mycontainer",
-    "_CONTAINER": "mydockercontainer:v1.0",
+    "_CONTAINER": "philippwitte/redwood-navierstokes:v1.0",
     "_JULIA_DEPOT_PATH": "/root/.julia",
     "_PYTHONPATH": "/usr/local/lib/python3.8/dist-packages",
     "_JULIA_NUM_THREADS": "2"

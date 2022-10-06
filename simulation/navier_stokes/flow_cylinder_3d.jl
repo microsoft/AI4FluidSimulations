@@ -13,13 +13,7 @@ using AzureClusterlessHPC, PyCall
 batch_clear()
 
 # Create pool
-batch = pyimport("azure.batch")
-container_registry = batch.models.ContainerRegistry(
-    registry_server = ENV["REGISTRY_SERVER"],
-    user_name = ENV["USER_NAME"],
-    password = ENV["PASSWD"]
-)
-create_pool(container_registry=container_registry)
+create_pool()
 
 ######################################################################################################################
 # Simulator
@@ -75,12 +69,13 @@ radius = 8
 Re = 200
 ν = 8 / Re
 stop = 64.
-num_train = 3200
+num_train = 4 # 3,200 for the full dataset
 
 # Data store info
-url = "https://myblobaccount.blob.core.windows.net"
-container = "mycontainer"
-credential = "mysecretkey"
+account = ENV["BLOB_ACCOUNT"]
+container = ENV["BLOB_CONTAINER"]
+credential = ENV["BLOB_KEY"]
+url = "https://" * account * ".blob.core.windows.net"
 
 # Create centers
 centers = vec(CartesianIndices((16:Int(n/2)-16, 16:n-16, 16:n-16)))
