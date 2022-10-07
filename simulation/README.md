@@ -54,7 +54,7 @@ julia flow_cylinder_3d.jl
 **Note**: The default number of VMs in `parameters.json` is 4 VMs. To simulate the full dataset (3,200 data samples), increase the number of VMs and set the variable `num_train=3200` (in flow_cylinder.jl). The runtime per sample is approximately 15 minutes.
 
 
-## CO2 fLow example
+## CO2 flow example
 
 As for the Navier Stokes example, export the name, container and credentials for your storage account:
 
@@ -71,5 +71,4 @@ cd ~/AI4FluidSimulations/simulation/sleipner
 julia run_opm_batch.jl
 ```
 
-**Note**: The example uses 4 VMs and simulates 4 training data examples. The runtime per example is between 4 and 12 hours. To increase the number of simulated training examples, adjust the pool size and the `num_train` variable in the Julia script accordingly. 
-
+**Note**: The example uses 4 VMs and simulates 4 training data examples. The runtime per example is between 4 and 12 hours. To increase the number of simulated training examples, adjust the pool size and the `num_train` variable in the Julia script accordingly.

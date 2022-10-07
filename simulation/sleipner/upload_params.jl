@@ -19,9 +19,11 @@ keys = init_file.keys()
 
 # Blob client
 blob = pyimport("azure.storage.blob")
-url = "https://myblobaccount.blob.core.windows.net"
-container = "mycontainer"
-credential = "mysecretkey"
+account = ENV["BLOB_ACCOUNT"]
+container = ENV["BLOB_CONTAINER"]
+credential = ENV["BLOB_KEY"]
+url = "https://" * account * ".blob.core.windows.net"
+
 client = blob.ContainerClient(
     account_url=url,
     container_name=container,
