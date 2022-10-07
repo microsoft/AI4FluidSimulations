@@ -3,18 +3,16 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
+from distdl.backends.common.partition import MPIPartition
 import distdl.utilities.slicing as slicing
-from distdl.utilities.torch import *
-from distdl.backends.mpi.partition import MPIPartition
 from torch.utils.data import Dataset 
+from distdl.utilities.torch import *
 from mpi4py import MPI
 import azure.storage.blob
 import h5py, zarr, os
 import numpy as np 
 import torch
 
-###################################################################################################
-# Serial dataloader
 
 class SleipnerSerial(Dataset):
     ''' Dataset class for flow data generated with OPM 
@@ -177,7 +175,6 @@ class SleipnerParallel(Dataset):
         return len(self.samples)
 
     def __getitem__(self, index):
-        pass
 
         # Read 
         i = int(self.samples[index])
@@ -197,13 +194,15 @@ class SleipnerParallel(Dataset):
             permx = torch.tensor(np.array(zarr.core.Array(self.store, path='permx')[1:,self.yStart:self.yEnd,:]), dtype=torch.float32)
             permz = torch.tensor(np.array(zarr.core.Array(self.store, path='permz')[1:,self.yStart:self.yEnd,:]), dtype=torch.float32)
             depth = torch.tensor(np.array(zarr.core.Array(self.store, path='depth')[1:,self.yStart:self.yEnd,:]), dtype=torch.float32)
+
             wellmap = torch.tensor(np.array(zarr.core.Array(self.store, path='well_' + str(i))[self.yStart:self.yEnd,:]), dtype=torch.float32)
+            pressure = torch.tensor(np.array(zarr.core.Array(self.store, path='pressure_' + str(i))[1:,self.yStart:self.yEnd,:,:]), dtype=torch.float32)
             saturation = torch.tensor(np.array(zarr.core.Array(self.store, path='saturation_' + str(i))[1:,self.yStart:self.yEnd,:,:]), dtype=torch.float32)
                     
             # Normalize between 0 and 1
             saturation[saturation < 0] = 0
             if self.normalize:
-                #pressure -= 130; pressure /= 400
+                pressure -= 130; pressure /= 400
                 permx -= 1.2000e-05; permx /= 43.5386
                 permz -= 1.2000e-5; permz /= 2495.3101
                 depth -= 728.0043; depth /= 363.9501
@@ -214,6 +213,7 @@ class SleipnerParallel(Dataset):
             permz = permz.view(1, nx, ny, nz, 1)
             depth = depth.view(1, nx, ny, nz, 1)
             wellmap = wellmap.view(1, 1, ny, nz, 1).repeat(1, nx, 1, 1, 1)
+            pressure = pressure.view(1, nx, ny, nz, nt)        # C=1 X Y Z T
             saturation = saturation.view(1, nx, ny, nz, nt)    # C=1 X Y Z T
 
             x = torch.cat((
@@ -225,7 +225,12 @@ class SleipnerParallel(Dataset):
                 axis=0
             )
             
-            y = saturation
+            y = torch.cat((
+                pressure,
+                saturation
+                ),
+                axis=0
+            )
 
             # Write file to disk for later use
             if self.cache is not None:
@@ -235,7 +240,7 @@ class SleipnerParallel(Dataset):
                 fid.close()
                 self.cache.append(filename)
 
-        return x.repeat(1, 1, 1, 1, nt), y#[:,:,:,:,self.target:self.target+1]
+        return x.repeat(1, 1, 1, 1, nt), y[self.target:self.target+1,:,:,:,:]
 
 
     def close(self):
@@ -243,52 +248,3 @@ class SleipnerParallel(Dataset):
             print('Delete temp files.')
             for file in self.cache:
                 os.system('rm ' + self.savepath + '/' + file)
-
-
-###################################################################################################
-# Sleipner dataset test
-
-if __name__ == '__main__':
-
-    # Init MPI
-    P_world = MPIPartition(MPI.COMM_WORLD)
-    P_world._comm.Barrier()
-    n = P_world.shape[0]
-
-    # Master worker partition with 6 dimensions ( N C X Y Z T )
-    root_shape = (1, 1, 1, 1, 1, 1)
-    P_root_base = P_world.create_partition_inclusive([0])
-    P_root = P_root_base.create_cartesian_topology_partition(root_shape)
-
-    # Distributed paritions
-    feat_workers = np.arange(0, n)
-    P_feat_base = P_world.create_partition_inclusive(feat_workers)
-    P_x = P_feat_base.create_cartesian_topology_partition((1,1,1,n,1,1))
-    P_y = P_feat_base.create_cartesian_topology_partition((1,1,n,1,1,1))
-
-    # Cuda
-    device = torch.device(f'cuda:{P_x.rank}')
-
-    # Data store
-    container = 'sleipner'
-    data_path = 'data'
-    client = azure.storage.blob.ContainerClient(
-        account_url="https://myblobaccout.blob.core.windows.net",
-        container_name="mycontainer",
-        credential="mysecretkey"
-    )
-
-    # Data dimensions
-    batchsize = 1
-    num_channel = 4
-    shape = (262, 118, 64, 86)    # X Y Z T
-    num_training = 1600
-
-    # Training data
-    samples = torch.linspace(1, num_training, num_training, dtype=torch.int32).long()
-    train_data = SleipnerParallel(P_x, samples, client, container, data_path, shape, savepath='/path/to/directory', filename='filename')
-
-    # Download sample
-    x, y = next(iter(train_data))
-    print("Rank: ", P_x.rank, "; x.shape: ", x.shape)
-    print("Rank: ", P_x.rank, "; y.shape: ", y.shape)

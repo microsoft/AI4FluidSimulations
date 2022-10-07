@@ -9,6 +9,12 @@ cd ~/AI4FluidSimulations/docker
 docker build -f Dockerfile.Training -t ai4fluidsimulations-training:v1.0 .
 ```
 
+## Configuration
+
+- Set paths for data and results.
+
+- Set blob credentials.
+
 ## Run with docker
 
 To run the docker container interactively, we start the container and mount the `training` directory with the code into the container:
@@ -22,7 +28,7 @@ docker run --gpus all \
     -v $(pwd):/workspace/home \
     -e OMPI_ALLOW_RUN_AS_ROOT="1" \
     -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM="1" \
-    -it philippwitte/ai4fluidsimulations-train:v1.0
+    -it philippwitte/ai4fluidsimulations-training:v1.0
 ```
 
 ## Run on host

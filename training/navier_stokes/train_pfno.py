@@ -3,13 +3,18 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
-import distdl, torch, os, time, h5py
-import numpy as np
-from mpi4py import MPI
+from distdl.backend import BackendProtocol, FrontEndProtocol, ModelProtocol, init_distdl
+from distdl.backends.common.partition import MPIPartition
 from pfno import ParallelFNO4d, DistributedRelativeLpLoss
-from distdl.backends.mpi.partition import MPIPartition
+import distdl, torch, os, time, h5py, azure
 from dataset import WaterlilyParallel
-import azure
+from mpi4py import MPI
+import numpy as np
+
+# Set comm backend
+init_distdl(frontend_protocol=FrontEndProtocol.MPI,
+            backend_protocol=BackendProtocol.NCCL,
+            model_protocol=ModelProtocol.CUPY)
 
 # Init MPI
 P_world = MPIPartition(MPI.COMM_WORLD)
@@ -27,9 +32,6 @@ P_feat_base = P_world.create_partition_inclusive(feat_workers)
 P_x = P_feat_base.create_cartesian_topology_partition((1,1,1,n,1,1))
 P_y = P_feat_base.create_cartesian_topology_partition((1,1,n,1,1,1))
 
-# Cuda
-device = torch.device(f'cuda:{P_x.rank}')
-
 # Reproducibility
 torch.manual_seed(P_x.rank + 123)
 np.random.seed(P_x.rank + 123)
@@ -37,43 +39,44 @@ np.random.seed(P_x.rank + 123)
 # Data dimensions
 nb = 1
 shape = (130, 130, 130, 64)    # X Y Z T
-num_train = 8
-num_valid = 2
+num_train = 2400
+num_valid = 400
 
 # Network dimensions
-channel_in = 6
-channel_hidden = 16
+channel_in = 3
+channel_hidden = 12
 channel_out = 1
-num_k = (16, 16, 16, 8)
+num_k = (18, 18, 18, 12)
 
 # Data store
-url = 'https://myblobaccount.blob.core.windows.net'
-container = 'mycontainer'
-data_path = 'data'
+container = os.environ['CONTAINER']
+data_path = os.environ['DATA_PATH']
 
 client = azure.storage.blob.ContainerClient(
-    account_url=url,
+    account_url=os.environ['ACCOUNT_URL'],
     container_name=container,
-    credential=os.environ['SECRET_KEY']
+    credential=os.environ['CREDENTIALS']
     )
 
 # Training dataset
 train_idx = torch.linspace(1, num_train, num_train, dtype=torch.int32).long()
-train_data = WaterlilyParallel(P_x, train_idx, client, container, data_path, shape, savepath='/path/to/data', 
+train_data = WaterlilyParallel(P_x, train_idx, client, container, data_path, shape, savepath=os.environ['DATA_DIR'], 
     filename="sample", normalize=True, clip=.3, target='vorticity')
 
 
 # Validation dataset
 valid_idx = torch.linspace(1 + num_train, num_valid + num_train, num_valid, dtype=torch.int32).long()
-valid_data = WaterlilyParallel(P_x, valid_idx, client, container, data_path, shape, savepath='/path/to/data', 
+valid_data = WaterlilyParallel(P_x, valid_idx, client, container, data_path, shape, savepath=os.environ['DATA_DIR'], 
     filename="sample", normalize=True, clip=.3, target='vorticity')
 
+
 # Dataloaders
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=nb, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=nb, shuffle=False)
 valid_loader = torch.utils.data.DataLoader(valid_data, batch_size=nb, shuffle=False)
 P_world._comm.Barrier()
 
 # FNO
+t0 = time.time()
 pfno = ParallelFNO4d(
     P_world, 
     P_root,
@@ -83,27 +86,49 @@ pfno = ParallelFNO4d(
     channel_hidden,
     channel_out,
     num_k
-).to(device)
+).to(P_x.device)
 
 # Training
-num_epochs = 100
-checkpoint_interval = 10
-out_dir = '/path/to/model'
+out_dir = os.environ['MODEL_DIR']
 parameters = [p for p in pfno.parameters()]
-criterion = DistributedRelativeLpLoss(P_root, P_x).to(device)
 
+# Optimizer
 if len(parameters) > 0:
-    optimizer = torch.optim.Adam(parameters, lr=1e-3)#, weight_decay=1e-4)
+    optimizer = torch.optim.Adam(parameters, lr=1e-3)
 else:
     optimizer = None
 
-# Keep track of loss history
-if P_root.active:
-    train_accs = []
-    valid_accs = []
+# Restart from checkpoint?
+start_epoch = 0
+if start_epoch > 0:
+
+    # Load model and optimizer state
+    checkpoint_path = os.path.join(out_dir, f'model_snapshot_{start_epoch:04d}_{P_x.rank:04d}.pt')
+    checkpoint = torch.load(checkpoint_path)
+    pfno.load_state_dict(checkpoint['model_state_dict'])
+    epoch = checkpoint['epoch']
+    if optimizer is not None:
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    # Load loss
+    if P_root.active:
+        lossname = 'loss_epoch_' + str(epoch) + '.h5'
+        fid = h5py.File(os.path.join(out_dir, lossname), 'r')
+        train_accs = list(fid['train_loss'])
+        valid_accs = list(fid['valid_loss'])
+        fid.close()
+else:
+    epoch = -1
+    if P_root.active:
+        train_accs = []
+        valid_accs = []
 
 # Training loop
-for i in range(num_epochs):
+num_epochs = 50
+checkpoint_interval = 5
+criterion = DistributedRelativeLpLoss(P_root, P_x).to(P_x.device)
+
+for i in range(start_epoch, num_epochs):
 
     # Loop over training data
     pfno.train()
@@ -112,9 +137,12 @@ for i in range(num_epochs):
     
     for j, (x, y) in enumerate(train_loader):
         
+        if P_root.active:
+            print("Batch: ", j)
+
         t0 = time.time()
-        x = x.to(device)
-        y = y.to(device)
+        x = x.to(P_x.device)
+        y = y.to(P_x.device)
 
         if optimizer is not None:
             optimizer.zero_grad()
@@ -146,8 +174,8 @@ for i in range(num_epochs):
     for j, (x, y) in enumerate(valid_loader):
         with torch.no_grad():
             t0 = time.time()
-            x = x.to(device)
-            y = y.to(device)
+            x = x.to(P_x.device)
+            y = y.to(P_x.device)
 
             y_hat = pfno(x)
             loss = criterion(y_hat, y)
@@ -159,8 +187,9 @@ for i in range(num_epochs):
         print(f'epoch = {i}, train loss = {train_loss/n_train_batch:08f}, val loss = {valid_loss/n_valid_batch:08f}')
         valid_accs.append(valid_loss/n_valid_batch)
 
-    # Save model snapshots and loss function
     if (i+1) % checkpoint_interval == 0:
+
+        # Save loss
         if P_root.active:
             lossname = 'loss_epoch_' + str(i) + '.h5'
             fid = h5py.File(os.path.join(out_dir, lossname), 'w')
@@ -168,8 +197,14 @@ for i in range(num_epochs):
             fid.create_dataset('valid_loss', data=valid_accs)
             fid.close()
 
-        model_path = os.path.join(out_dir, f'model_{i:04d}_{P_x.rank:04d}.pt')
-        torch.save(pfno.state_dict(), model_path)
+        # Save snapshot
+        model_path = os.path.join(out_dir, f'model_snapshot_{i:04d}_{P_x.rank:04d}.pt')
+        torch.save({
+            'epoch': i,
+            'model_state_dict': pfno.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict()
+            }, 
+            model_path)
 
 # Save after training
 model_path = os.path.join(out_dir, f'model_{P_x.rank:04d}.pt')

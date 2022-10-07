@@ -4,11 +4,10 @@
 #  ------------------------------------------------------------------------------------------
 
 import numpy as np
-import cupy as cp
 import torch, distdl, math, time
 from mpi4py import MPI
-from distdl.backends.mpi.partition import MPIPartition
-from distdl.nn.repartition_cupy import Repartition
+from distdl.backends.common.partition import MPIPartition
+from distdl.nn.repartition import Repartition
 from distdl.nn.broadcast import Broadcast
 from distdl.utilities.torch import zero_volume_tensor
 from distdl.utilities.slicing import *
@@ -50,15 +49,14 @@ class Linear(distdl.nn.Module):
 
     def __init__(self, P_root, P_feat, channel_in, channel_out, broadcast_weights=None, broadcast_bias=None):
         super(Linear, self).__init__()
-        device = torch.device(f'cuda:{P_feat.rank}')
 
         if P_root.active:
-            self.w = torch.nn.Parameter(torch.empty(channel_in, channel_out, 1, 1, 1, 1, device=device))
-            self.b = torch.nn.Parameter(torch.zeros(1, channel_out, 1, 1, 1, 1, device=device))
+            self.w = torch.nn.Parameter(torch.empty(channel_in, channel_out, 1, 1, 1, 1, device=P_root.device))
+            self.b = torch.nn.Parameter(torch.zeros(1, channel_out, 1, 1, 1, 1, device=P_root.device))
             torch.nn.init.kaiming_uniform_(self.w, a=math.sqrt(5))
         else:
-            self.register_buffer('w', torch.nn.Parameter(zero_volume_tensor(device=device)))
-            self.register_buffer('b', torch.nn.Parameter(zero_volume_tensor(device=device)))
+            self.register_buffer('w', torch.nn.Parameter(zero_volume_tensor(device=P_feat.device)))
+            self.register_buffer('b', torch.nn.Parameter(zero_volume_tensor(device=P_feat.device)))
 
         if broadcast_weights is None and broadcast_bias is None:
             self.broadcast_weights = Broadcast(P_root, P_feat)
@@ -85,8 +83,6 @@ class SpectralConv(distdl.nn.Module):
     def __init__(self, P_spec, transposef, transposeb, channel_hidden, num_k):
         super(SpectralConv, self).__init__()
 
-        self.device = torch.device(f'cuda:{P_spec.rank}')
-
         # Repartitioning
         self.transposef = transposef    # Repartition(P_in, P_spec)
         self.transposeb = transposeb    # Repartition(P_spec, P_in)
@@ -111,9 +107,9 @@ class SpectralConv(distdl.nn.Module):
         # Initialize modes
         scaler = 1.0 / channel_hidden / channel_hidden
         self.w1 = torch.nn.Parameter(scaler * torch.rand(channel_hidden, channel_hidden, self.x_shape_local, num_k[1], 2*num_k[2], num_k[3], 
-            device=self.device, dtype=torch.complex64))
+            device=P_spec.device, dtype=torch.complex64))
         self.w2 = torch.nn.Parameter(scaler * torch.rand(channel_hidden, channel_hidden, self.x_shape_local, num_k[1], 2*num_k[2], num_k[3],
-            device=self.device, dtype=torch.complex64))
+            device=P_spec.device, dtype=torch.complex64))
 
 
     def forward(self, x):

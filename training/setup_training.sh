@@ -7,7 +7,7 @@ CUPY_VERSION=${CUDA_VERSION//./}
 pip3 install --no-cache-dir git+https://github.com/philippwitte/distdl.git@nccl
 
 # Dependencies
-pip3 install --no-cache-dir azure-common azure-storage-blob h5py zarr mpi4py
+pip3 install --no-cache-dir azure-common azure-storage-blob h5py zarr mpi4py matplotlib torchmetrics
 
 # Cupy + nccl support
 pip3 install --no-cache-dir cupy-cuda$CUPY_VERSION --pre -f https://pip.cupy.dev/pre
