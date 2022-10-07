@@ -3,6 +3,8 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
+import sys 
+sys.path.append('..')
 from distdl.backend import BackendProtocol, FrontEndProtocol, ModelProtocol, init_distdl
 from torchmetrics import MeanAbsoluteError, MeanSquaredError, R2Score
 from distdl.backends.common.partition import MPIPartition
@@ -57,13 +59,14 @@ channel_out = 1
 num_k = (18, 18, 18, 12)
 
 # Data store
-container = os.environ['CONTAINER']
-data_path = os.environ['DATA_PATH']
+account_url = "https://" + os.environ['BLOB_ACCOUNT'] + ".blob.core.windows.net"
+container = os.environ['BLOB_CONTAINER']
+data_path = '/data'
 
 client = azure.storage.blob.ContainerClient(
-    account_url=os.environ['ACCOUNT_URL'],
+    account_url=account_url,
     container_name=container,
-    credential=os.environ['CREDENTIALS']
+    credential=os.environ['BLOB_KEY']
     )
 
 # Test dataset
@@ -130,7 +133,6 @@ for i, (x, y) in enumerate(test_loader):
         mae_scores[i] = mae(y.reshape(-1), y_.reshape(-1))
         r2_scores[i] = r2(y.reshape(-1), y_.reshape(-1))
 
-
 if P_world.rank == 0:
     torch.save(mse_scores, 'mse_scores.pt')
     torch.save(mae_scores, 'mae_scores.pt')
@@ -165,12 +167,12 @@ if P_root.active:
 
     plt.figure()
     plt.subplot(1,3,1)
-    plt.imshow(x[0,0,:,:,32,-1].detach().cpu())
+    plt.imshow(x[0,0,:,:,64,-1].detach().cpu())
     plt.title("Input (channel 0)")
     plt.subplot(1,3,2)
-    plt.imshow(y[0,0,:,:,32,-1].detach().cpu())
+    plt.imshow(y[0,0,:,:,64,-1].detach().cpu())
     plt.title("Target")
     plt.subplot(1,3,3)
-    plt.imshow(y_[0,0,:,:,32,-1].detach().cpu())
+    plt.imshow(y_[0,0,:,:,64,-1].detach().cpu())
     plt.title("Prediction")
     plt.savefig("comparison.png")

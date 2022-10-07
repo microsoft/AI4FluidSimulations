@@ -3,6 +3,8 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
+import sys 
+sys.path.append('..')
 from distdl.backend import BackendProtocol, FrontEndProtocol, ModelProtocol, init_distdl
 from distdl.backends.common.partition import MPIPartition
 from pfno import ParallelFNO4d, DistributedRelativeLpLoss
@@ -37,7 +39,7 @@ torch.manual_seed(P_x.rank + 123)
 np.random.seed(P_x.rank + 123)
 
 # Data dimensions
-nb = 1
+nb = 2
 shape = (130, 130, 130, 64)    # X Y Z T
 num_train = 2400
 num_valid = 400
@@ -49,13 +51,14 @@ channel_out = 1
 num_k = (18, 18, 18, 12)
 
 # Data store
-container = os.environ['CONTAINER']
-data_path = os.environ['DATA_PATH']
+account_url = "https://" + os.environ['BLOB_ACCOUNT'] + ".blob.core.windows.net"
+container = os.environ['BLOB_CONTAINER']
+data_path = '/data'
 
 client = azure.storage.blob.ContainerClient(
-    account_url=os.environ['ACCOUNT_URL'],
+    account_url=account_url,
     container_name=container,
-    credential=os.environ['CREDENTIALS']
+    credential=os.environ['BLOB_KEY']
     )
 
 # Training dataset
@@ -136,9 +139,6 @@ for i in range(start_epoch, num_epochs):
     n_train_batch = 0
     
     for j, (x, y) in enumerate(train_loader):
-        
-        if P_root.active:
-            print("Batch: ", j)
 
         t0 = time.time()
         x = x.to(P_x.device)

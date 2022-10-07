@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#  ------------------------------------------------------------------------------------------
+#  Copyright (c) Microsoft Corporation. All rights reserved.
+#  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
+#  ------------------------------------------------------------------------------------------
+
 CUDA_VERSION=$1
 CUPY_VERSION=${CUDA_VERSION//./}
 

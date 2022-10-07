@@ -3,11 +3,12 @@
 #  Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 #  ------------------------------------------------------------------------------------------
 
-
+import sys 
+sys.path.append('..')
 from distdl.backend import BackendProtocol, FrontEndProtocol, ModelProtocol, init_distdl
 from torchmetrics import MeanAbsolutePercentageError, MeanSquaredError, R2Score
 from distdl.backends.common.partition import MPIPartition
-from distdl.nn.repartition_cupy import Repartition
+from distdl.nn.repartition import Repartition
 import distdl, torch, os, time, h5py
 import numpy as np
 from mpi4py import MPI
@@ -49,8 +50,8 @@ np.random.seed(P_x.rank + 123)
 # Data dimensions
 nb = 1
 shape = (262, 118, 64, 86)    # X Y Z T
-num_train = 1400
-num_test = 200
+num_train = 1576
+num_test = 24
 
 # Network dimensions
 channel_in = 4
@@ -59,13 +60,14 @@ channel_out = 1
 num_k = (16, 16, 12, 10)
 
 # Data store
-container = os.environ['CONTAINER']
-data_path = os.environ['DATA_PATH']
+account_url = "https://" + os.environ['BLOB_ACCOUNT'] + ".blob.core.windows.net"
+container = os.environ['BLOB_CONTAINER']
+data_path = '/data'
 
 client = azure.storage.blob.ContainerClient(
-    account_url=os.environ['ACCOUNT_URL'],
+    account_url=account_url,
     container_name=container,
-    credential=os.environ['SLEIPNER_CREDENTIALS']
+    credential=os.environ['BLOB_KEY']
     )
 
 # Training dataset
@@ -133,7 +135,6 @@ for i, (x, y) in enumerate(test_loader):
         mape_scores[i] = mape(y.reshape(-1), y_.reshape(-1))
         r2_scores[i] = r2(y.reshape(-1), y_.reshape(-1))
 
-
 if P_world.rank == 0:
     torch.save(mse_scores, 'mse_scores.pt')
     torch.save(mape_scores, 'mape_scores.pt')
@@ -142,8 +143,6 @@ if P_world.rank == 0:
     print("R2: ", r2_scores.mean())
     print("MSE: ", mse_scores.mean() * 1e3)
     print("MAPE: ", mape_scores.mean() * 1e3)
-
-
 
 # Save result
 if P_root.active:
@@ -155,8 +154,8 @@ if P_root.active:
 
     plt.figure(figsize=(8,4))
     plt.subplot(1,3,1)
-    plt.imshow(x[0,0,205,:,:,0].detach().cpu())
-    plt.title("Input (channel 0)")
+    plt.imshow(x[0,-1,205,:,:,0].detach().cpu())
+    plt.title("Well location")
     plt.subplot(1,3,2)
     plt.imshow(y[0,0,205,:,:,-1].detach().cpu())
     plt.title("Target")
