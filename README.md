@@ -18,7 +18,7 @@ For training, we use a model-parallel version of [Fourier Neural Operators](http
 Clone this repository:
 
 ```
-https://github.com/microsoft/AI4FluidSimulations
+git clone https://github.com/microsoft/AI4FluidSimulations
 ```
 
 Go to the training directory and pull our docker image for training:
