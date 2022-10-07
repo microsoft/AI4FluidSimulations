@@ -2,30 +2,44 @@
 
 ## Overview
 
-**AI for Industry Simulations** is a project for training large-scale surrogate models for solving partial differential equations (PDEs) with deep learning. We specifically target large-scale three-dimensional applications as common in industrial applications such as reservoir simulation. The current repository contains two example applications:
+**AI for Industry Simulations** is a project for training large-scale surrogate models for solving partial differential equations (PDEs) with deep learning. We target large-scale three-dimensional applications as common in industrial applications such as reservoir simulation. The current repository contains two example applications:
 
 - Simulating two-phase CO2 flow in porous media.
 
 - Solving the 3D Navier Stokes to simulate flow around a sphere.
 
-For each example, we provide the code to simulate the training data and to train a neural surrogate model using a [model-parallel implementation of Fourier Neural Operators](https://arxiv.org/abs/2204.01205). We train our deep surrogate model using supervised training, so simulating the training data by solving the underlying PDE for different inputs is the first step of the workflow. For industry-sized applications, this training data step can become quite time consuming, as we need to solve 3D PDEs a large number of times (in the range of multiple 1,000 times). For this reason, we provide examples of how we can simulate this training data on in parallel on Azure using the AzureClusterlessHPC package and store the training data in Azure's cloud object store (Blob Storage).
+For each example, we provide the code to simulate the training data and to train a neural surrogate model using a [model-parallel implementation of Fourier Neural Operators](https://arxiv.org/abs/2204.01205). We train our deep surrogate model using supervised training, so simulating the training data by solving the underlying PDE for different inputs is the first step of the workflow. For industry-sized applications, training data simulation is time consuming, as we need to solve 3D PDEs for a large number of samples. We provide examples for simulating training data in parallel on Azure using the AzureClusterlessHPC package and store the data in Azure's cloud object store (Blob Storage).
 
-For training, we provide a model-paralle architecture of [Fourier Neural Operators](https://arxiv.org/pdf/2010.08895.pdf), which enables us to scale to larger problem sizes than with data parallelism. Unlike model parallelism in standard Pytorch, our model-parallel FNO uses domain decomposition, which enables a higher level of concurrently than model sharding or pipeline parallelism. Our model-parallel FNO is based on distributed programming with [DistDL](https://github.com/distdl/distdl), a Python package with distributed communication primitives for implementing model-parallel neural networks.
+For training, we use a model-parallel architecture of [Fourier Neural Operators](https://arxiv.org/pdf/2010.08895.pdf). The model-parallel FNO uses domain decomposition, which enables a higher level of concurrently than model sharding or pipeline parallelism. The model-parallel FNO is based on distributed programming with [DistDL](https://github.com/distdl/distdl), a Python package with distributed communication primitives for implementing model-parallel neural networks.
 
 
-## Quickstart for training
+## Quickstart for parallel FNO training
 
-First, clone this repository:
+Clone this repository:
 
 ```
 https://github.com/microsoft/AI4FluidSimulations
 ```
 
-Install Python dependencies:
+Go to the training directory and pull our docker image for training:
 
 ```
-pip3 install -r AI4FluidSimulations/requirements.txt
+# Go to examples directory
+cd AI4FluidSimulations/training
+
+# Start docker container
+docker run --gpus all \
+    -v $(pwd):/workspace/home \
+    -e OMPI_ALLOW_RUN_AS_ROOT="1" \
+    -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM="1" \
+    -it philippwitte/ai4fluidsimulations-training:v1.0
 ```
+
+Run the example script (e.g., on 4 GPUs):
+
+```
+mpiexec -n 4 python3 example_pfno.py
+``
 
 ## Credits
 
