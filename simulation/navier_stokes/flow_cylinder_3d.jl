@@ -40,7 +40,7 @@ create_pool()
         p_hist[:, :, :, i] = sim.flow.p
     end
 
-    # Collect in- and output and save as hdf5 file
+    # Collect in- and outputs
     model = cat(sim.flow.μ₀, reshape(sim.flow.μ₁, n, n, n, :), dims=4)
 
     # Zarr client
@@ -51,7 +51,7 @@ create_pool()
         credential=credential
     )
 
-    # Store data
+    # Store data in Azure blob storage
     zarr = pyimport("zarr")
     store = zarr.ABSStore(container=container, prefix="data", client=client)  
     root = zarr.group(store=store, overwrite=false)
